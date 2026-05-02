@@ -1,0 +1,20 @@
+package com.kakaopaysec.ordersystem.order.controller;
+
+import com.kakaopaysec.ordersystem.global.dto.ApiResponse;
+import com.kakaopaysec.ordersystem.order.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/orders")
+@RequiredArgsConstructor
+public class OrderController {
+
+    private final OrderService orderService;
+
+    @PostMapping
+    public ApiResponse<OrderService.OrderResponseDto> createOrder(@RequestBody OrderService.OrderRequestDto request) {
+        OrderService.OrderResponseDto response = orderService.processOrder(request);
+        return ApiResponse.success(response);
+    }
+}
