@@ -13,13 +13,13 @@ public class ExternalKrxClient {
 
     private final RestClient krxRestClient;
 
-    // Record를 활용해 가독성 높은 DTO 정의
+    // DTOs for external exchange communication
     public record KrxRequest(String userId, String stockCode, int quantity) {}
     public record KrxResponse(boolean success, String krxOrderId, String message) {}
 
     @CircuitBreaker(name = "krxExchange", fallbackMethod = "fallbackOrder")
     public KrxResponse sendOrderToKrx(KrxRequest request) {
-        log.info("[외부 통신] 한국거래소로 주문 전송 시도: {}", request.stockCode());
+        log.info("[External] Sending order to KRX: {}", request.stockCode());
         
         return krxRestClient.post()
                 .uri("/external/krx/order")
@@ -28,9 +28,10 @@ public class ExternalKrxClient {
                 .body(KrxResponse.class);
     }
 
-    // 장애 전파 방지를 위한 Fallback (서킷이 열리거나 타임아웃 발생 시 호출)
-    private KrxResponse fallbackOrder(KrxRequest request, Throwable t) {
-        log.error("[장애 격리] Fallback 로직 실행. 원인: {}", t.getMessage());
-        throw new RuntimeException("거래소 통신 불가: " + t.getMessage());
-    }
+// 수정 후 (시니어 추천 방식)
+public String fallbackOrder(Throwable t) {
+    log.error("[Resilience] Fallback executed. Cause: {}", t.getMessage());
+    // 아무것도 던지지 않거나, 원본 예외를 그대로 던져야 서킷 브레이커가 상태를 관리합니다.
+    throw new RuntimeException(t); 
+}
 }

@@ -14,26 +14,26 @@ import java.util.concurrent.TimeoutException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 외부 API 연동 타임아웃 (2초 초과 시)
+    // External API timeout (>2s)
     @ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
     @ExceptionHandler(TimeoutException.class)
     public ApiResponse<Void> handleTimeoutException(TimeoutException e) {
-        log.error("외부 연동 타임아웃: {}", e.getMessage());
+        log.error("External API timeout: {}", e.getMessage());
         return ApiResponse.error("EXTERNAL_TIMEOUT", "거래소 응답이 지연되고 있습니다.");
     }
 
-    // 서킷 브레이커 작동 (차단 상태일 때)
+    // Circuit breaker open (calls blocked)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     @ExceptionHandler(CallNotPermittedException.class)
     public ApiResponse<Void> handleCircuitBreakerException(CallNotPermittedException e) {
-        log.error("서킷 브레이커 작동중: {}", e.getMessage());
+        log.error("Circuit breaker is open: {}", e.getMessage());
         return ApiResponse.error("CIRCUIT_OPEN", "현재 시스템 보호를 위해 외부 연결이 일시 차단되었습니다.");
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ApiResponse<Void> handleGeneralException(Exception e) {
-        log.error("서버 내부 에러: {}", e.getMessage(), e);
+        log.error("Internal server error: {}", e.getMessage(), e);
         return ApiResponse.error("INTERNAL_ERROR", "시스템 오류가 발생했습니다.");
     }
 }
